@@ -194,7 +194,7 @@ const AuthPage = () => {
           <div className="overlay">
             
             <div className="overlay-panel overlay-left">
-              <div className="image-content robot-img">
+              <div className="image-content lightning-img">
                 <div className="overlay-text">
                       <h3>Welcome Back!</h3>
                       <p>Already have an account? Sign in to continue.</p>
@@ -212,7 +212,7 @@ const AuthPage = () => {
                         </div>
                     </div>
                 ) : (
-                    <div className="image-content lightning-img">
+                  <div className="image-content robot-img">
                         <div className="overlay-text">
                               <h3>Hello, Friend!</h3>
                               <p>Don't have an account? Sign up and unlock amazing features.</p>

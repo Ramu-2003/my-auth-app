@@ -324,15 +324,18 @@ button:active {
 }
 
 .lightning-img {
-    background-image: url('../assets/HUMAN.png');
+    background: url('/assets/ROBOT.png') center/cover no-repeat;
+    background-color: #e6e6e6;
 }
 
 .robot-img {
-    background-image: url('../assets/ROBOT.png');
+    background: url('/assets/HUMAN.png') center/cover no-repeat;
+    background-color: #e6e6e6;
 }
 
 .forgot-img {
-    background-image: url('../assets/GRAVE.png');
+    background: url('/assets/GRAVE.png') center/cover no-repeat;
+    background-color: #e6e6e6;
 }
 
 @keyframes show {

@@ -57,7 +57,10 @@ const ResetPassword = () => {
                     </form>
                 </div>
                 <div className="overlay-container" style={{ left: '50%', width: '50%' }}>
-                    <div className="image-content forgot-img" style={{ backgroundImage: "url('/assets/GRIM-REAPER.png')" }}>
+                    <div
+                        className="image-content forgot-img"
+                        style={{ backgroundImage: "url('/assets/GRIM-REAPER.png')", backgroundSize: 'cover', backgroundPosition: 'center' }}
+                    >
                         {/* This corresponds to your Grim Reaper image */}
                     </div>
                 </div>
