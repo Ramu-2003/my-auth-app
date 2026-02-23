@@ -18,13 +18,11 @@ const app = express();
    CORS CONFIGURATION
 =========================== */
 
+// Allow all origins temporarily for testing
 app.use(cors({
- origin: [
-  process.env.CLIENT_URL,
-  "https://ramu-4012y.netlify.app",
-  "http://localhost:5173"
- ],
- credentials: true
+ origin: '*',
+ methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+ allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 app.use(express.json());
