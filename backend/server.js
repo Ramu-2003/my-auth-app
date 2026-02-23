@@ -15,8 +15,8 @@ const app = express();
 const corsOptions = {
     origin: [
         'http://localhost:5173',
+        'https://myne-4012y.netlify.app',
         process.env.CLIENT_URL,
-        // Add your Netlify URL here after deployment (e.g., 'https://your-app.netlify.app')
     ].filter(Boolean),
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -24,6 +24,9 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
+
+// Handle preflight requests for all routes
+app.options('*', cors(corsOptions));
 app.use(express.json());
 
 if (!process.env.MONGO_URI) {
