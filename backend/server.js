@@ -15,9 +15,20 @@ const app = express();
 app.use(cors({
     origin: '*',
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'Accept']
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
+    preflightContinue: false,
+    optionsSuccessStatus: 204
 }));
+
+// Handle preflight OPTIONS requests
+app.options('*', cors());
+
 app.use(express.json());
+
+// Test endpoint to verify CORS is working
+app.get('/api/test', (req, res) => {
+    res.json({ message: 'CORS is working!', timestamp: new Date().toISOString() });
+});
 
 if (!process.env.MONGO_URI) {
     console.error('MONGO_URI is not defined. Check backend/.env or environment variables.');
