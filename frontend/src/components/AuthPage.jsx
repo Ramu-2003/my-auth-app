@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import './AuthPage.css';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+
 const AuthPage = () => {
   const [isSignUp, setIsSignUp] = useState(false);
   const [isForgotPass, setIsForgotPass] = useState(false);
@@ -44,7 +46,7 @@ const AuthPage = () => {
       return alert("Passwords do not match!");
     }
     try {
-      const response = await axios.post('http://localhost:3000/api/register', {
+      const response = await axios.post(`${API_URL}/register`, {
         name,
         email,
         password
@@ -59,7 +61,7 @@ const AuthPage = () => {
   const handleSignIn = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('http://localhost:3000/api/login', {
+      const response = await axios.post(`${API_URL}/login`, {
         email,
         password
       });
@@ -73,7 +75,7 @@ const AuthPage = () => {
   const handleForgotSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('http://localhost:3000/api/forgot-password', { email });
+      const response = await axios.post(`${API_URL}/forgot-password`, { email });
       alert(response.data.message);
     } catch (err) {
       alert(err.response?.data?.message || "Error sending reset link");

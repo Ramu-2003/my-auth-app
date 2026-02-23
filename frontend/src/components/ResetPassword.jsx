@@ -3,6 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './AuthPage.css';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+
 const ResetPassword = () => {
     const { token } = useParams();
     const navigate = useNavigate();
@@ -15,7 +17,7 @@ const ResetPassword = () => {
         if (password !== confirmPassword) return alert("Passwords do not match");
 
         try {
-            await axios.post(`http://localhost:3000/api/reset-password/${token}`, { password });
+            await axios.post(`${API_URL}/reset-password/${token}`, { password });
             alert("Password updated successfully!");
             navigate('/');
         } catch (err) {

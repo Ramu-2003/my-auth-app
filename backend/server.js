@@ -10,7 +10,20 @@ const User = require('./models/User');
 require('dotenv').config({ path: path.join(__dirname, '.env') });
 
 const app = express();
-app.use(cors());
+
+// CORS configuration - allows requests from your Netlify frontend
+const corsOptions = {
+    origin: [
+        'http://localhost:5173',
+        process.env.CLIENT_URL,
+        // Add your Netlify URL here after deployment (e.g., 'https://your-app.netlify.app')
+    ].filter(Boolean),
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 
 if (!process.env.MONGO_URI) {
