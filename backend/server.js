@@ -94,21 +94,26 @@ app.post('/api/forgot-password', async (req, res) => {
 
         const resetUrl = `${process.env.CLIENT_URL}/reset-password/${resetToken}`;
 
-        const mailOptions = {
-            to: user.email,
-            from: process.env.SMTP_EMAIL,
-            subject: 'Password Reset Request',
-            text: `Click here to reset your password: ${resetUrl}`
-        };
+        // Log the reset URL for debugging (since email is blocked on Render free tier)
+        console.log('Password reset URL for', user.email, ':', resetUrl);
 
-        transporter.sendMail(mailOptions, (err, info) => {
-            if (err) {
-                console.error('Email send error:', err);
-                return res.status(500).json({ message: "Error sending email: " + err.message });
-            }
-            console.log('Email sent:', info.response);
+        // Try to send email, but don't fail if it doesn't work (Render blocks SMTP)
+        try {
+            const mailOptions = {
+                to: user.email,
+                from: process.env.SMTP_EMAIL,
+                subject: 'Password Reset Request',
+                text: `Click here to reset your password: ${resetUrl}`
+            };
+            await transporter.sendMail(mailOptions);
             res.json({ message: "Reset email sent successfully" });
-        });
+        } catch (emailErr) {
+            // Return the reset link in the response so user can still reset password
+            res.json({ 
+                message: "Email service unavailable. Use this link to reset:",
+                resetLink: resetUrl
+            });
+        }
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
