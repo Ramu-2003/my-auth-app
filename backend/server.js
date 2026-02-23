@@ -93,8 +93,12 @@ app.post('/api/forgot-password', async (req, res) => {
             text: `Click here to reset your password: ${resetUrl}`
         };
 
-        transporter.sendMail(mailOptions, (err) => {
-            if (err) return res.status(500).json({ message: "Error sending email" });
+        transporter.sendMail(mailOptions, (err, info) => {
+            if (err) {
+                console.error('Email send error:', err);
+                return res.status(500).json({ message: "Error sending email: " + err.message });
+            }
+            console.log('Email sent:', info.response);
             res.json({ message: "Reset email sent successfully" });
         });
     } catch (err) {
