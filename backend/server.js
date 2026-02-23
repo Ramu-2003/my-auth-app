@@ -11,32 +11,12 @@ require('dotenv').config({ path: path.join(__dirname, '.env') });
 
 const app = express();
 
-// CORS configuration - allows requests from your Netlify frontend
-const allowedOrigins = [
-    'http://localhost:5173',
-    'https://myne-4012y.netlify.app',
-    process.env.CLIENT_URL,
-].filter(Boolean);
-
-const corsOptions = {
-    origin: function (origin, callback) {
-        // Allow requests with no origin (like mobile apps or curl requests)
-        if (!origin) return callback(null, true);
-        if (allowedOrigins.indexOf(origin) !== -1) {
-            callback(null, true);
-        } else {
-            console.log('CORS blocked origin:', origin);
-            callback(new Error('Not allowed by CORS'));
-        }
-    },
-    credentials: true,
+// CORS configuration - allows all origins (TEMPORARY for testing)
+app.use(cors({
+    origin: '*',
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
-    preflightContinue: false,
-    optionsSuccessStatus: 204
-};
-
-app.use(cors(corsOptions));
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept']
+}));
 app.use(express.json());
 
 if (!process.env.MONGO_URI) {
