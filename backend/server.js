@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
-const nodemailer = require('nodemailer');
+const sgMail = require('@sendgrid/mail');
 const path = require('path');
 
 require('dotenv').config({ path: path.join(__dirname, '.env') });
@@ -40,22 +40,9 @@ mongoose.connect(process.env.MONGO_URI)
 
 
 /* ===========================
-   SMTP CONFIGURATION
+   SENDGRID CONFIGURATION
 =========================== */
-
-const transporter = nodemailer.createTransport({
-
- service: "gmail",
-
- auth: {
-
-  user: process.env.SMTP_EMAIL,
-
-  pass: process.env.SMTP_PASSWORD
-
- }
-
-});
+sgMail.setApiKey(process.env.SENDGRID_API_KEY || '');
 
 
 
@@ -192,47 +179,33 @@ app.post('/api/forgot-password', async (req, res) => {
    });
 
 
-  const resetToken =
-   crypto.randomBytes(32).toString("hex");
+   const resetToken = crypto.randomBytes(32).toString('hex');
 
+   user.resetPasswordToken = resetToken;
+   user.resetPasswordExpires = Date.now() + 3600000;
+   await user.save();
 
-  user.resetPasswordToken = resetToken;
+   const frontend = process.env.FRONTEND_URL || 'http://localhost:5173';
+   const resetURL = `${frontend}/reset-password/${resetToken}`;
 
-  user.resetPasswordExpires =
-   Date.now() + 3600000;
+   const msg = {
+      to: user.email,
+      from: process.env.EMAIL_FROM || process.env.SMTP_EMAIL || 'no-reply@example.com',
+      subject: 'Password Reset',
+      html: `
+         <h3>Password Reset</h3>
+         <p>Click below link:</p>
+         <a href="${resetURL}">${resetURL}</a>
+         <p>Expires in 1 hour</p>
+      `,
+   };
 
-
-  await user.save();
-
-
-
-  const resetURL =
-
-`${process.env.CLIENT_URL}/reset-password/${resetToken}`;
-
-
-
-  await transporter.sendMail({
-
-   from: process.env.SMTP_EMAIL,
-
-   to: user.email,
-
-   subject: "Password Reset",
-
-   html:
-
-`
-<h3>Password Reset</h3>
-
-<p>Click below link:</p>
-
-<a href="${resetURL}">${resetURL}</a>
-
-<p>Expires in 1 hour</p>
-`
-
-  });
+   try {
+      await sgMail.send(msg);
+   } catch (err) {
+      console.error('SendGrid send error:', err);
+      return res.status(500).json({ message: 'Email failed' });
+   }
 
 
 

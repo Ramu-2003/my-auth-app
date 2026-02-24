@@ -1,15 +1,9 @@
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
-const nodemailer = require('nodemailer');
+const sgMail = require('@sendgrid/mail');
 const crypto = require('crypto');
 
-const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        user: process.env.SMTP_EMAIL,
-        pass: process.env.SMTP_PASSWORD
-    }
-});
+sgMail.setApiKey(process.env.SENDGRID_API_KEY || '');
 
 exports.register = async (req, res) => {
     try {
@@ -55,43 +49,23 @@ exports.forgotPassword = async (req, res) => {
         user.resetPasswordExpires = Date.now() + 3600000; // 1 hour
         await user.save();
 
-        // create transporter (uses env vars)
-        const transporter = nodemailer.createTransport({
-            host: process.env.SMTP_HOST || 'smtp.gmail.com',
-            port: process.env.SMTP_PORT ? Number(process.env.SMTP_PORT) : 587,
-            secure: (process.env.SMTP_SECURE === 'true') || false,
-            auth: {
-                user: process.env.SMTP_USER || process.env.SMTP_EMAIL,
-                pass: process.env.SMTP_PASS || process.env.SMTP_PASSWORD,
-            },
-        });
+        const frontend = process.env.FRONTEND_URL || 'http://localhost:5173';
+        const resetUrl = `${frontend}/reset/${token}`;
 
-        // verify transporter to get clearer error if auth/conn fails
-        try {
-            await transporter.verify();
-            console.log('SMTP verified');
-        } catch (verifyErr) {
-            console.error('SMTP verify failed:', verifyErr);
-            return res.status(500).json({ message: 'SMTP configuration/connection error' });
-        }
-
-        const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
-        const resetUrl = `${clientUrl}/reset/${token}`;
-
-        const mailOptions = {
-            from: process.env.EMAIL_FROM || (process.env.SMTP_USER || process.env.SMTP_EMAIL),
+        const msg = {
             to: user.email,
+            from: process.env.EMAIL_FROM || 'no-reply@example.com',
             subject: 'Password Reset',
             text: `Reset your password: ${resetUrl}`,
             html: `<p>Reset your password <a href="${resetUrl}">here</a>.</p>`,
         };
 
         try {
-            const info = await transporter.sendMail(mailOptions);
-            console.log('Reset email sent:', info && info.response ? info.response : info);
+            await sgMail.send(msg);
+            console.log('Reset email sent via SendGrid to', user.email);
             return res.json({ message: 'Password reset email sent' });
         } catch (sendErr) {
-            console.error('sendMail error:', sendErr);
+            console.error('SendGrid send error:', sendErr);
             return res.status(500).json({ message: 'Error sending email' });
         }
     } catch (err) {
