@@ -1,35 +1,39 @@
 .loading-screen {
   position: fixed;
   inset: 0;
-  width: 100%;
-  height: 100%;
+  width: 100vw;
+  height: 100vh;
   overflow: hidden;
   font-family: 'Montserrat', sans-serif;
   transition: background-color 0.8s ease;
+  display: flex;
+  flex-direction: column;
 }
 
 .loading-image-container {
   position: absolute;
-  inset: 0;
+  top: 0;
+  left: 0;
   width: 100%;
-  height: 100%;
+  /* Height is reduced to 80% to ensure image doesn't get hidden behind text UI */
+  height: 80%; 
   z-index: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px; /* Prevents image from touching screen edges */
+  box-sizing: border-box;
 }
 
 .loading-image {
   width: 100%;
   height: 100%;
-  object-position: center center;
   animation: fadeIn 0.6s ease-in-out;
 }
 
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .loading-shadow {
@@ -37,10 +41,9 @@
   bottom: 0;
   left: 0;
   right: 0;
-  height: 40%;
+  height: 45%;
   pointer-events: none;
   z-index: 2;
-  transition: background 0.8s ease;
 }
 
 .loading-content {
@@ -48,34 +51,28 @@
   bottom: 0;
   left: 0;
   right: 0;
-  padding: 20px 40px 40px;
+  padding: 40px;
   z-index: 3;
 }
 
 .loading-content h1 {
-  font-size: clamp(2rem, 5vw, 3.5rem);
+  font-size: clamp(2.5rem, 6vw, 4rem);
   font-weight: 800;
-  line-height: 1.1;
-  letter-spacing: -0.02em;
-  transition: color 0.6s ease;
-  margin: 0 0 6px 0;
+  margin: 0 0 4px 0;
   animation: slideUp 0.5s ease-out;
-  text-shadow: 0 2px 10px rgba(255,255,255,0.5);
 }
 
-.loading-content > p {
-  font-size: clamp(0.85rem, 1.5vw, 1rem);
-  font-weight: 500;
-  transition: color 0.6s ease;
-  opacity: 0.9;
-  margin: 0 0 12px 0;
+.loading-content p {
+  font-size: clamp(1rem, 2vw, 1.2rem);
+  font-weight: 600;
+  margin: 0 0 20px 0;
   animation: slideUp 0.5s ease-out;
 }
 
 @keyframes slideUp {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(20px);
   }
   to {
     opacity: 1;
@@ -85,51 +82,46 @@
 
 .loading-progress-row {
   display: flex;
-  align-items: flex-end;
   justify-content: space-between;
-  margin-bottom: 6px;
+  align-items: flex-end;
+  margin-bottom: 10px;
 }
 
 .loading-progress-row span:first-child {
-  font-size: clamp(0.7rem, 1vw, 0.8rem);
-  font-weight: 500;
-  letter-spacing: 0.06em;
+  font-size: 0.8rem;
+  font-weight: 700;
   text-transform: uppercase;
-  opacity: 0.8;
+  letter-spacing: 0.1em;
 }
 
 .loading-progress-row span:last-child {
-  font-size: clamp(1.2rem, 2.5vw, 1.8rem);
-  font-weight: 700;
+  font-size: 2rem;
+  font-weight: 800;
   line-height: 1;
-  letter-spacing: -0.01em;
-  transition: color 0.6s ease;
 }
 
 .loading-bar-track {
   width: 100%;
-  height: 5px;
-  background-color: rgba(0, 0, 0, 0.15);
-  border-radius: 999px;
+  height: 8px;
+  background-color: rgba(0, 0, 0, 0.1);
+  border-radius: 20px;
   overflow: hidden;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
 }
 
 .loading-bar-fill {
   height: 100%;
-  border-radius: 999px;
-  transition: width 0.15s linear, background 0.8s ease;
+  border-radius: 20px;
+  transition: width 0.15s linear;
 }
 
 .loading-dots {
   display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 12px;
+  gap: 10px;
+  margin-top: 25px;
 }
 
 .loading-dot {
   height: 8px;
-  border-radius: 999px;
+  border-radius: 20px;
   transition: all 0.35s ease;
 }
