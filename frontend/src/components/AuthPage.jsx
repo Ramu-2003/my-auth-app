@@ -91,7 +91,6 @@ const AuthPage = () => {
   };
 
   const handleAcceptTerms = () => {
-    alert("Terms Accepted! Redirecting...");
     window.location.href = '/dashboard';
   };
 

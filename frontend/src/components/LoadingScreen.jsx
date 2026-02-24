@@ -32,7 +32,7 @@ const LOADING_STAGES = [
   },
 ];
 
-const LoadingScreen = ({ onComplete, duration = 5000 }) => {
+const LoadingScreen = ({ onComplete, duration = 30000 }) => {
   const [progress, setProgress] = useState(0);
   const [currentStage, setCurrentStage] = useState(0);
 
@@ -58,10 +58,11 @@ const LoadingScreen = ({ onComplete, duration = 5000 }) => {
     }
   }, [progress, onComplete]);
 
+  // Each stage is 10 seconds (33.33% each)
   useEffect(() => {
     let stage = 0;
-    if (progress > 30 && progress <= 70) stage = 1;
-    else if (progress > 70) stage = 2;
+    if (progress > 33.33 && progress <= 66.66) stage = 1;
+    else if (progress > 66.66) stage = 2;
     setCurrentStage(stage);
   }, [progress]);
 

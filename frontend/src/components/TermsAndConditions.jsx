@@ -20,7 +20,7 @@ const TermsAndConditions = ({ onAccept, onDecline }) => {
 
   // Show loading screen after Accept is clicked
   if (showLoading) {
-    return <LoadingScreen onComplete={handleLoadingComplete} duration={5000} />;
+    return <LoadingScreen onComplete={handleLoadingComplete} duration={30000} />;
   }
 
   return (
