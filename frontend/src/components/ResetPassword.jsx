@@ -21,7 +21,7 @@ const ResetPassword = () => {
             alert("Password updated successfully!");
             navigate('/');
         } catch (err) {
-            alert(err.response.data.message);
+            alert(err.response?.data?.message || "Error resetting password");
         }
     };
 
