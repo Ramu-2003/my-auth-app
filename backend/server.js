@@ -133,31 +133,26 @@ app.post('/api/forgot-password', async (req, res) => {
       resetLink: resetURL
     };
 
-    // Try to send email if SendGrid is configured
-    if (process.env.SENDGRID_API_KEY) {
-      try {
-        const msg = {
-          to: user.email,
-          from: process.env.EMAIL_FROM || 'techinmystyle@gmail.com',
-          subject: 'Password Reset',
-          html: `
-            <h3>Password Reset</h3>
-            <p>Click below link:</p>
-            <a href="${resetURL}">${resetURL}</a>
-            <p>Expires in 1 hour</p>
-          `,
-        };
-        await sgMail.send(msg);
-        response.message = "Reset email sent";
-      } catch (emailErr) {
-        console.error('SendGrid error:', emailErr.message);
-        response.message = "Email failed, use the link below";
-      }
-    } else {
-      response.message = "Use this link to reset your password";
+    // Try to send email
+    try {
+      const msg = {
+        to: user.email,
+        from: process.env.EMAIL_FROM || 'techinmystyle@gmail.com',
+        subject: 'Password Reset',
+        html: `
+          <h3>Password Reset</h3>
+          <p>Click below link:</p>
+          <a href="${resetURL}">${resetURL}</a>
+          <p>Expires in 1 hour</p>
+        `,
+      };
+      await sgMail.send(msg);
+      res.json({ message: "Reset email sent. Check your inbox!" });
+    } catch (emailErr) {
+      console.error('SendGrid error:', emailErr);
+      // Don't expose reset link - email must work for security
+      res.status(500).json({ message: "Failed to send email. Please try again later." });
     }
-
-    res.json(response);
   } catch (err) {
     console.error('Forgot password error:', err);
     res.status(500).json({ message: "Server error" });

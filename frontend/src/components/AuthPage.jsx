@@ -11,8 +11,6 @@ const AuthPage = () => {
   const [isForgotPass, setIsForgotPass] = useState(false);
   const [showPass, setShowPass] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
-  const [resetLink, setResetLink] = useState('');
-  const [showResetLink, setShowResetLink] = useState(false);
 
   // Form States
   const [name, setName] = useState('');
@@ -30,16 +28,12 @@ const AuthPage = () => {
     e.preventDefault();
     setIsForgotPass(true);
     setIsSignUp(false);
-    setShowResetLink(false);
-    setResetLink('');
   };
 
   const goBackToLogin = () => {
     setIsForgotPass(false);
     setIsSignUp(false);
     setShowTerms(false);
-    setShowResetLink(false);
-    setResetLink('');
   };
 
   const clearInputs = () => {
@@ -89,30 +83,16 @@ const AuthPage = () => {
     e.preventDefault();
     try {
       const response = await axios.post(`${API_URL}/forgot-password`, { email });
-      if (response.data.resetLink) {
-        setResetLink(response.data.resetLink);
-        setShowResetLink(true);
-      } else {
-        alert(response.data.message);
-      }
+      alert(response.data.message);
     } catch (err) {
       console.error('Forgot password error:', err);
-      alert(err.response?.data?.message || "Error sending reset link. Check console for details.");
+      alert(err.response?.data?.message || "Failed to send reset email. Please try again later.");
     }
   };
 
   const handleAcceptTerms = () => {
     alert("Terms Accepted! Redirecting...");
     window.location.href = '/dashboard';
-  };
-
-  const copyResetLink = () => {
-    navigator.clipboard.writeText(resetLink);
-    alert("Reset link copied to clipboard!");
-  };
-
-  const openResetLink = () => {
-    window.open(resetLink, '_blank');
   };
 
   const EyeIcon = () => (
@@ -130,27 +110,6 @@ const AuthPage = () => {
         onAccept={handleAcceptTerms} 
         onDecline={goBackToLogin} 
       />
-    );
-  }
-
-  // Show Reset Link
-  if (showResetLink && resetLink) {
-    return (
-      <div className="auth-body forgot-bg">
-        <div className="container" id="container" style={{ width: '900px', minHeight: '500px' }}>
-          <div className="form-container" style={{ width: '100%', position: 'relative', opacity: 1, padding: '40px' }}>
-            <h1 className="title-green">Password Reset Link</h1>
-            <p style={{ margin: '20px 0', wordBreak: 'break-all', background: '#f0f0f0', padding: '15px', borderRadius: '8px' }}>
-              {resetLink}
-            </p>
-            <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginTop: '20px' }}>
-              <button className="btn-green" onClick={openResetLink}>Open Link</button>
-              <button className="btn-blue" onClick={copyResetLink}>Copy Link</button>
-              <button className="ghost-dark" onClick={goBackToLogin}>Back to Login</button>
-            </div>
-          </div>
-        </div>
-      </div>
     );
   }
 
