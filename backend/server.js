@@ -27,7 +27,10 @@ app.use(cors({
 
 app.use(express.json());
 
-
+// Test endpoint
+app.get('/api/test', (req, res) => {
+  res.json({ message: 'Backend is working!', time: new Date().toISOString() });
+});
 
 /* ===========================
    DATABASE CONNECTION
@@ -77,24 +80,11 @@ app.post('/api/register', async (req, res) => {
   await user.save();
 
 
-  res.json({
-
-   message: "Registered Successfully"
-
-  });
-
+  res.json({ message: "Registered Successfully" });
+ } catch (err) {
+  console.error('Register error:', err);
+  res.status(500).json({ message: "Server error" });
  }
-
- catch {
-
-  res.status(500).json({
-
-   message: "Server error"
-
-  });
-
- }
-
 });
 
 
@@ -137,26 +127,11 @@ app.post('/api/login', async (req, res) => {
   );
 
 
-  res.json({
-
-   token,
-
-   user
-
-  });
-
+  res.json({ token, user });
+ } catch (err) {
+  console.error('Login error:', err);
+  res.status(500).json({ message: "Server error" });
  }
-
- catch {
-
-  res.status(500).json({
-
-   message: "Server error"
-
-  });
-
- }
-
 });
 
 
