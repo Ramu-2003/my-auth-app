@@ -11,6 +11,7 @@ const LOADING_STAGES = [
     barColor: "#2563eb",
     titleColor: "#1e40af",
     subtitleColor: "#3b82f6",
+    objectFit: "cover",
   },
   {
     image: '/assets/ROBOTS-LOAD-BG.png',
@@ -20,6 +21,7 @@ const LOADING_STAGES = [
     barColor: "#dc2626",
     titleColor: "#991b1b",
     subtitleColor: "#ef4444",
+    objectFit: "contain",
   },
   {
     image: '/assets/GRIM-REAPER-LOAD-BG.png',
@@ -29,6 +31,7 @@ const LOADING_STAGES = [
     barColor: "#059669",
     titleColor: "#065f46",
     subtitleColor: "#10b981",
+    objectFit: "contain",
   },
 ];
 
@@ -80,6 +83,7 @@ const LoadingScreen = ({ onComplete, duration = 30000 }) => {
           src={stage.image} 
           alt={stage.title}
           className="loading-image"
+          style={{ objectFit: stage.objectFit }}
           onError={(e) => {
             e.target.style.display = 'none';
           }}
