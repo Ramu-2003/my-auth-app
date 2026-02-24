@@ -4,7 +4,7 @@ import './LoadingScreen.css';
 // Use existing images from public/assets
 const LOADING_STAGES = [
   {
-    image: '/assets/HUMAN.png',
+    image: '/assets/HUMANS-LOAD-BG.png',
     title: "Humans",
     subtitle: "Connecting with humanity...",
     bgColor: "#dbeafe",
@@ -13,7 +13,7 @@ const LOADING_STAGES = [
     subtitleColor: "#3b82f6",
   },
   {
-    image: '/assets/ROBOT.png',
+    image: '/assets/ROBOTS-LOAD-BG.png',
     title: "Robots",
     subtitle: "Initializing machine protocols...",
     bgColor: "#fee2e2",
@@ -22,7 +22,7 @@ const LOADING_STAGES = [
     subtitleColor: "#ef4444",
   },
   {
-    image: '/assets/GRAVE.png',
+    image: '/assets/GRIM-REAPER-LOAD-BG.png',
     title: "System",
     subtitle: "Finalizing configuration...",
     bgColor: "#d1fae5",
