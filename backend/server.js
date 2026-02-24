@@ -12,17 +12,11 @@ const User = require('./models/User');
 
 const app = express();
 
-
-
-/* ===========================
-   CORS CONFIGURATION
-=========================== */
-
-// Allow all origins temporarily for testing
+// CORS CONFIGURATION
 app.use(cors({
- origin: '*',
- methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
- allowedHeaders: ['Content-Type', 'Authorization']
+  origin: '*',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 app.use(express.json());
@@ -32,114 +26,76 @@ app.get('/api/test', (req, res) => {
   res.json({ message: 'Backend is working!', time: new Date().toISOString() });
 });
 
-/* ===========================
-   DATABASE CONNECTION
-=========================== */
-
+// DATABASE CONNECTION
 mongoose.connect(process.env.MONGO_URI)
-.then(() => console.log("MongoDB Connected"))
-.catch(err => console.log(err));
+  .then(() => console.log("MongoDB Connected"))
+  .catch(err => console.log("MongoDB Error:", err));
 
+// SENDGRID CONFIGURATION
+if (process.env.SENDGRID_API_KEY) {
+  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+}
 
-
-/* ===========================
-   SENDGRID CONFIGURATION
-=========================== */
-sgMail.setApiKey(process.env.SENDGRID_API_KEY || '');
-
-
-
-/* ===========================
-   REGISTER
-=========================== */
-
+// REGISTER
 app.post('/api/register', async (req, res) => {
+  try {
+    const { name, email, password } = req.body;
+    
+    if (!name || !email || !password) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
 
- try {
+    const userExists = await User.findOne({ email });
+    if (userExists) {
+      return res.status(400).json({ message: "User already exists" });
+    }
 
-  const { name, email, password } = req.body;
+    const user = new User({ name, email, password });
+    await user.save();
 
-  const userExists = await User.findOne({ email });
-
-  if (userExists)
-   return res.status(400).json({
-    message: "User already exists"
-   });
-
-
-  const user = new User({
-
-   name,
-
-   email,
-
-   password
-
-  });
-
-  await user.save();
-
-
-  res.json({ message: "Registered Successfully" });
- } catch (err) {
-  console.error('Register error:', err);
-  res.status(500).json({ message: "Server error" });
- }
+    res.json({ message: "Registered Successfully" });
+  } catch (err) {
+    console.error('Register error:', err);
+    res.status(500).json({ message: "Server error" });
+  }
 });
 
-
-
-/* ===========================
-   LOGIN
-=========================== */
-
+// LOGIN
 app.post('/api/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    
+    if (!email || !password) {
+      return res.status(400).json({ message: "Email and password are required" });
+    }
 
- try {
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(400).json({ message: "Invalid credentials" });
+    }
 
-  const { email, password } = req.body;
+    const isMatch = await user.comparePassword(password);
+    if (!isMatch) {
+      return res.status(400).json({ message: "Invalid credentials" });
+    }
 
-  const user = await User.findOne({ email });
+    const token = jwt.sign(
+      { id: user._id },
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" }
+    );
 
-  if (!user)
-   return res.status(400).json({
-    message: "Invalid credentials"
-   });
-
-
-  const isMatch =
-   await user.comparePassword(password);
-
-  if (!isMatch)
-   return res.status(400).json({
-    message: "Invalid credentials"
-   });
-
-
-  const token = jwt.sign(
-
-   { id: user._id },
-
-   process.env.JWT_SECRET,
-
-   { expiresIn: "1h" }
-
-  );
-
-
-  res.json({ token, user });
- } catch (err) {
-  console.error('Login error:', err);
-  res.status(500).json({ message: "Server error" });
- }
+    res.json({ 
+      token, 
+      user: { id: user._id, name: user.name, email: user.email }
+    });
+  } catch (err) {
+    console.error('Login error:', err);
+    res.status(500).json({ message: "Server error" });
+  }
 });
 
-
-
-/* ===========================
-   FORGOT PASSWORD
-=========================== */
-
+// FORGOT PASSWORD
 app.post('/api/forgot-password', async (req, res) => {
   try {
     const { email } = req.body;
@@ -149,7 +105,6 @@ app.post('/api/forgot-password', async (req, res) => {
     }
 
     const user = await User.findOne({ email });
-
     if (!user) {
       return res.json({ message: "If email exists, reset link sent" });
     }
@@ -173,7 +128,7 @@ app.post('/api/forgot-password', async (req, res) => {
       try {
         const msg = {
           to: user.email,
-          from: process.env.EMAIL_FROM || 'no-reply@example.com',
+          from: process.env.EMAIL_FROM || 'techinmystyle@gmail.com',
           subject: 'Password Reset',
           html: `
             <h3>Password Reset</h3>
@@ -193,85 +148,36 @@ app.post('/api/forgot-password', async (req, res) => {
     }
 
     res.json(response);
-
   } catch (err) {
     console.error('Forgot password error:', err);
     res.status(500).json({ message: "Server error" });
   }
 });
 
-
-
-/* ===========================
-   RESET PASSWORD
-=========================== */
-
+// RESET PASSWORD
 app.post('/api/reset-password/:token', async (req, res) => {
+  try {
+    const user = await User.findOne({
+      resetPasswordToken: req.params.token,
+      resetPasswordExpires: { $gt: Date.now() }
+    });
 
- try {
+    if (!user) {
+      return res.status(400).json({ message: "Invalid or expired token" });
+    }
 
-  const user = await User.findOne({
+    user.password = req.body.password;
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
+    await user.save();
 
-   resetPasswordToken: req.params.token,
-
-   resetPasswordExpires: {
-
-    $gt: Date.now()
-
-   }
-
-  });
-
-
-  if (!user)
-   return res.status(400).json({
-
-    message: "Invalid or expired token"
-
-   });
-
-
-  user.password = req.body.password;
-
-  user.resetPasswordToken = undefined;
-
-  user.resetPasswordExpires = undefined;
-
-
-  await user.save();
-
-
-
-  res.json({
-
-   message: "Password updated successfully"
-
-  });
-
- }
-
- catch {
-
-  res.status(500).json({
-
-   message: "Server error"
-
-  });
-
- }
-
+    res.json({ message: "Password updated successfully" });
+  } catch (err) {
+    console.error('Reset password error:', err);
+    res.status(500).json({ message: "Server error" });
+  }
 });
 
-
-
-/* ===========================
-   SERVER START
-=========================== */
-
-const PORT =
- process.env.PORT || 3000;
-
-
-app.listen(PORT, () =>
- console.log("Server running on port", PORT)
-);
+// SERVER START
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log("Server running on port", PORT));
