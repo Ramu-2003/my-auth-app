@@ -202,18 +202,15 @@ app.post('/api/forgot-password', async (req, res) => {
 
    try {
       await sgMail.send(msg);
-   } catch (err) {
-      console.error('SendGrid send error:', err);
-      return res.status(500).json({ message: 'Email failed' });
+      res.json({ message: "Reset email sent" });
+   } catch (emailErr) {
+      console.error('SendGrid error:', emailErr);
+      // Return reset link in response since email failed
+      res.json({ 
+         message: "Email service unavailable",
+         resetLink: resetURL
+      });
    }
-
-
-
-  res.json({
-
-   message: "Reset email sent"
-
-  });
 
  }
 

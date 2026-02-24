@@ -80,7 +80,15 @@ const AuthPage = () => {
     e.preventDefault();
     try {
       const response = await axios.post(`${API_URL}/forgot-password`, { email });
-      alert(response.data.message);
+      if (response.data.resetLink) {
+        // Show reset link to user since email failed
+        const userConfirmed = confirm(`${response.data.message}\n\nClick OK to open the reset link in a new tab, or Cancel to copy it manually.`);
+        if (userConfirmed) {
+          window.open(response.data.resetLink, '_blank');
+        }
+      } else {
+        alert(response.data.message);
+      }
     } catch (err) {
       alert(err.response?.data?.message || "Error sending reset link");
     }
