@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './LoadingScreen.css';
 
-// Use existing images from public/assets
+// Loading stages - 10 seconds each, 30 seconds total
 const LOADING_STAGES = [
   {
     image: '/assets/HUMANS-LOAD-BG.png',
@@ -21,7 +21,7 @@ const LOADING_STAGES = [
     barColor: "#dc2626",
     titleColor: "#991b1b",
     subtitleColor: "#ef4444",
-    objectFit: "contain",
+    objectFit: "cover",
   },
   {
     image: '/assets/GRIM-REAPER-LOAD-BG.png',
@@ -31,7 +31,7 @@ const LOADING_STAGES = [
     barColor: "#059669",
     titleColor: "#065f46",
     subtitleColor: "#10b981",
-    objectFit: "contain",
+    objectFit: "cover",
   },
 ];
 
@@ -39,6 +39,7 @@ const LoadingScreen = ({ onComplete, duration = 30000 }) => {
   const [progress, setProgress] = useState(0);
   const [currentStage, setCurrentStage] = useState(0);
 
+  // Progress timer - updates every 80ms
   useEffect(() => {
     const interval = setInterval(() => {
       setProgress((prev) => {
@@ -52,6 +53,7 @@ const LoadingScreen = ({ onComplete, duration = 30000 }) => {
     return () => clearInterval(interval);
   }, [duration]);
 
+  // Call onComplete when progress reaches 100%
   useEffect(() => {
     if (progress >= 100 && onComplete) {
       const timeout = setTimeout(() => {
@@ -61,12 +63,18 @@ const LoadingScreen = ({ onComplete, duration = 30000 }) => {
     }
   }, [progress, onComplete]);
 
-  // Each stage is 10 seconds (33.33% each)
+  // Stage transitions:
+  // Stage 0 (Humans): 0% to 33.33% (0-10 seconds)
+  // Stage 1 (Robots): 33.33% to 66.66% (10-20 seconds)
+  // Stage 2 (System): 66.66% to 100% (20-30 seconds)
   useEffect(() => {
-    let stage = 0;
-    if (progress > 33.33 && progress <= 66.66) stage = 1;
-    else if (progress > 66.66) stage = 2;
-    setCurrentStage(stage);
+    if (progress <= 33.33) {
+      setCurrentStage(0);
+    } else if (progress <= 66.66) {
+      setCurrentStage(1);
+    } else {
+      setCurrentStage(2);
+    }
   }, [progress]);
 
   const stage = LOADING_STAGES[currentStage];
@@ -77,16 +85,14 @@ const LoadingScreen = ({ onComplete, duration = 30000 }) => {
       className="loading-screen"
       style={{ backgroundColor: stage.bgColor }}
     >
-      {/* Main image */}
+      {/* Main image with smooth fade */}
       <div className="loading-image-container">
         <img 
+          key={currentStage}
           src={stage.image} 
           alt={stage.title}
           className="loading-image"
           style={{ objectFit: stage.objectFit }}
-          onError={(e) => {
-            e.target.style.display = 'none';
-          }}
         />
       </div>
 
@@ -98,14 +104,14 @@ const LoadingScreen = ({ onComplete, duration = 30000 }) => {
 
       {/* Bottom UI content */}
       <div className="loading-content">
-        {/* Title */}
-        <h1 style={{ color: stage.titleColor }}>
-          {LOADING_STAGES[currentStage].title}
+        {/* Title with fade animation */}
+        <h1 key={`title-${currentStage}`} style={{ color: stage.titleColor }}>
+          {stage.title}
         </h1>
 
-        {/* Subtitle */}
-        <p style={{ color: stage.subtitleColor }}>
-          {LOADING_STAGES[currentStage].subtitle}
+        {/* Subtitle with fade animation */}
+        <p key={`subtitle-${currentStage}`} style={{ color: stage.subtitleColor }}>
+          {stage.subtitle}
         </p>
 
         {/* Progress row */}
@@ -125,7 +131,7 @@ const LoadingScreen = ({ onComplete, duration = 30000 }) => {
           />
         </div>
 
-        {/* Stage dots */}
+        {/* Stage dots indicator */}
         <div className="loading-dots">
           {LOADING_STAGES.map((_, i) => (
             <div 
