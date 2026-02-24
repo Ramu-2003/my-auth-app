@@ -72,7 +72,9 @@ const AuthPage = () => {
       // Instead of immediate entry, show Terms and Conditions
       setShowTerms(true);
     } catch (err) {
-      alert(err.response?.data?.message || "Login failed");
+      console.error('Login error:', err);
+      const errorMsg = err.response?.data?.message || err.message || "Login failed";
+      alert(errorMsg);
     }
   };
 

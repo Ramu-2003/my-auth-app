@@ -65,19 +65,28 @@ app.post('/api/login', async (req, res) => {
   try {
     const { email, password } = req.body;
     
+    console.log('Login attempt:', email);
+    
     if (!email || !password) {
+      console.log('Missing email or password');
       return res.status(400).json({ message: "Email and password are required" });
     }
 
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(400).json({ message: "Invalid credentials" });
+      console.log('User not found:', email);
+      return res.status(400).json({ message: "User not found. Please register first" });
     }
 
+    console.log('User found:', user.email);
+    
     const isMatch = await user.comparePassword(password);
     if (!isMatch) {
-      return res.status(400).json({ message: "Invalid credentials" });
+      console.log('Password mismatch for:', email);
+      return res.status(400).json({ message: "Incorrect password" });
     }
+
+    console.log('Password matched for:', email);
 
     const token = jwt.sign(
       { id: user._id },
@@ -85,13 +94,14 @@ app.post('/api/login', async (req, res) => {
       { expiresIn: "1h" }
     );
 
+    console.log('Login successful:', email);
     res.json({ 
       token, 
       user: { id: user._id, name: user.name, email: user.email }
     });
   } catch (err) {
     console.error('Login error:', err);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: "Server error: " + err.message });
   }
 });
 
