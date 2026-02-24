@@ -141,7 +141,7 @@ app.post('/api/forgot-password', async (req, res) => {
         `,
       };
       await sgMail.send(msg);
-      res.json({ message: "Reset email sent. Check your inbox!" });
+      res.json({ message: "Reset email sent. Check your inbox or spam." });
     } catch (emailErr) {
       console.error('SendGrid error:', emailErr);
       // Don't expose reset link - email must work for security
