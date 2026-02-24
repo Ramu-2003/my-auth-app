@@ -3,7 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './AuthPage.css';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+// Hardcoded API URL - change this to your Render backend URL
+const API_URL = 'https://my-auth-app-48yw.onrender.com/api';
 
 const ResetPassword = () => {
     const { token } = useParams();

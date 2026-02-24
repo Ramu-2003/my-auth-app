@@ -3,13 +3,16 @@ import axios from 'axios';
 import './AuthPage.css';
 import TermsAndConditions from './TermsAndConditions';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+// Hardcoded API URL - change this to your Render backend URL
+const API_URL = 'https://my-auth-app-48yw.onrender.com/api';
 
 const AuthPage = () => {
   const [isSignUp, setIsSignUp] = useState(false);
   const [isForgotPass, setIsForgotPass] = useState(false);
   const [showPass, setShowPass] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
+  const [resetLink, setResetLink] = useState('');
+  const [showResetLink, setShowResetLink] = useState(false);
 
   // Form States
   const [name, setName] = useState('');
@@ -27,12 +30,16 @@ const AuthPage = () => {
     e.preventDefault();
     setIsForgotPass(true);
     setIsSignUp(false);
+    setShowResetLink(false);
+    setResetLink('');
   };
 
   const goBackToLogin = () => {
     setIsForgotPass(false);
     setIsSignUp(false);
     setShowTerms(false);
+    setShowResetLink(false);
+    setResetLink('');
   };
 
   const clearInputs = () => {
@@ -55,9 +62,11 @@ const AuthPage = () => {
         password
       });
       alert(response.data.message);
-      setIsSignUp(false); // Move to login after registration
+      setIsSignUp(false);
+      clearInputs();
     } catch (err) {
-      alert(err.response?.data?.message || "Registration failed");
+      console.error('Register error:', err);
+      alert(err.response?.data?.message || "Registration failed. Check console for details.");
     }
   };
 
@@ -69,12 +78,10 @@ const AuthPage = () => {
         password
       });
       localStorage.setItem('token', response.data.token);
-      // Instead of immediate entry, show Terms and Conditions
       setShowTerms(true);
     } catch (err) {
       console.error('Login error:', err);
-      const errorMsg = err.response?.data?.message || err.message || "Login failed";
-      alert(errorMsg);
+      alert(err.response?.data?.message || "Login failed. Check console for details.");
     }
   };
 
@@ -83,22 +90,29 @@ const AuthPage = () => {
     try {
       const response = await axios.post(`${API_URL}/forgot-password`, { email });
       if (response.data.resetLink) {
-        // Show reset link to user since email failed
-        const userConfirmed = confirm(`${response.data.message}\n\nClick OK to open the reset link in a new tab, or Cancel to copy it manually.`);
-        if (userConfirmed) {
-          window.open(response.data.resetLink, '_blank');
-        }
+        setResetLink(response.data.resetLink);
+        setShowResetLink(true);
       } else {
         alert(response.data.message);
       }
     } catch (err) {
-      alert(err.response?.data?.message || "Error sending reset link");
+      console.error('Forgot password error:', err);
+      alert(err.response?.data?.message || "Error sending reset link. Check console for details.");
     }
   };
 
   const handleAcceptTerms = () => {
     alert("Terms Accepted! Redirecting...");
-    window.location.href = '/dashboard'; // Replace with your target route
+    window.location.href = '/dashboard';
+  };
+
+  const copyResetLink = () => {
+    navigator.clipboard.writeText(resetLink);
+    alert("Reset link copied to clipboard!");
+  };
+
+  const openResetLink = () => {
+    window.open(resetLink, '_blank');
   };
 
   const EyeIcon = () => (
@@ -109,7 +123,7 @@ const AuthPage = () => {
     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
   );
 
-  // --- External Terms and Conditions Component View ---
+  // Show Terms and Conditions
   if (showTerms) {
     return (
       <TermsAndConditions 
@@ -119,7 +133,28 @@ const AuthPage = () => {
     );
   }
 
-  // --- Standard Auth Forms Return ---
+  // Show Reset Link
+  if (showResetLink && resetLink) {
+    return (
+      <div className="auth-body forgot-bg">
+        <div className="container" id="container" style={{ width: '900px', minHeight: '500px' }}>
+          <div className="form-container" style={{ width: '100%', position: 'relative', opacity: 1, padding: '40px' }}>
+            <h1 className="title-green">Password Reset Link</h1>
+            <p style={{ margin: '20px 0', wordBreak: 'break-all', background: '#f0f0f0', padding: '15px', borderRadius: '8px' }}>
+              {resetLink}
+            </p>
+            <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginTop: '20px' }}>
+              <button className="btn-green" onClick={openResetLink}>Open Link</button>
+              <button className="btn-blue" onClick={copyResetLink}>Copy Link</button>
+              <button className="ghost-dark" onClick={goBackToLogin}>Back to Login</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Main Auth Forms
   return (
     <div className={`auth-body ${isSignUp ? 'signup-bg' : isForgotPass ? 'forgot-bg' : 'signin-bg'}`}>
       <div className={`container ${isSignUp ? "right-panel-active" : ""} ${isForgotPass ? "forgot-active" : ""}`} id="container">
