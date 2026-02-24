@@ -1,12 +1,27 @@
 import React, { useState } from 'react';
 import './TermsAndConditions.css';
+import LoadingScreen from './LoadingScreen';
 
 const TermsAndConditions = ({ onAccept, onDecline }) => {
   const [isChecked1, setIsChecked1] = useState(false);
   const [isChecked2, setIsChecked2] = useState(false);
+  const [showLoading, setShowLoading] = useState(false);
 
   // The Accept button is only enabled if BOTH checkboxes are checked
   const isAcceptEnabled = isChecked1 && isChecked2;
+
+  const handleAccept = () => {
+    setShowLoading(true);
+  };
+
+  const handleLoadingComplete = () => {
+    onAccept();
+  };
+
+  // Show loading screen after Accept is clicked
+  if (showLoading) {
+    return <LoadingScreen onComplete={handleLoadingComplete} duration={5000} />;
+  }
 
   return (
     <div className="tc-page-container">
@@ -65,7 +80,7 @@ const TermsAndConditions = ({ onAccept, onDecline }) => {
               <button 
                 className={`tc-btn-accept ${isAcceptEnabled ? '' : 'disabled'}`} 
                 disabled={!isAcceptEnabled}
-                onClick={onAccept}
+                onClick={handleAccept}
               >
                 O ACCEPT
               </button>
