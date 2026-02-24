@@ -166,66 +166,63 @@ app.post('/api/login', async (req, res) => {
 =========================== */
 
 app.post('/api/forgot-password', async (req, res) => {
+  try {
+    const { email } = req.body;
+    
+    if (!email) {
+      return res.status(400).json({ message: "Email is required" });
+    }
 
- try {
+    const user = await User.findOne({ email });
 
-  const { email } = req.body;
+    if (!user) {
+      return res.json({ message: "If email exists, reset link sent" });
+    }
 
-  const user = await User.findOne({ email });
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    user.resetPasswordToken = resetToken;
+    user.resetPasswordExpires = Date.now() + 3600000;
+    await user.save();
 
-  if (!user)
-   return res.json({
-    message: "If email exists, reset link sent"
-   });
+    const frontend = process.env.FRONTEND_URL || process.env.CLIENT_URL || 'http://localhost:5173';
+    const resetURL = `${frontend}/reset-password/${resetToken}`;
 
+    // Always return reset link - email is optional
+    const response = { 
+      message: "Reset link generated",
+      resetLink: resetURL
+    };
 
-   const resetToken = crypto.randomBytes(32).toString('hex');
+    // Try to send email if SendGrid is configured
+    if (process.env.SENDGRID_API_KEY) {
+      try {
+        const msg = {
+          to: user.email,
+          from: process.env.EMAIL_FROM || 'no-reply@example.com',
+          subject: 'Password Reset',
+          html: `
+            <h3>Password Reset</h3>
+            <p>Click below link:</p>
+            <a href="${resetURL}">${resetURL}</a>
+            <p>Expires in 1 hour</p>
+          `,
+        };
+        await sgMail.send(msg);
+        response.message = "Reset email sent";
+      } catch (emailErr) {
+        console.error('SendGrid error:', emailErr.message);
+        response.message = "Email failed, use the link below";
+      }
+    } else {
+      response.message = "Use this link to reset your password";
+    }
 
-   user.resetPasswordToken = resetToken;
-   user.resetPasswordExpires = Date.now() + 3600000;
-   await user.save();
+    res.json(response);
 
-   const frontend = process.env.FRONTEND_URL || 'http://localhost:5173';
-   const resetURL = `${frontend}/reset-password/${resetToken}`;
-
-   const msg = {
-      to: user.email,
-      from: process.env.EMAIL_FROM || process.env.SMTP_EMAIL || 'no-reply@example.com',
-      subject: 'Password Reset',
-      html: `
-         <h3>Password Reset</h3>
-         <p>Click below link:</p>
-         <a href="${resetURL}">${resetURL}</a>
-         <p>Expires in 1 hour</p>
-      `,
-   };
-
-   try {
-      await sgMail.send(msg);
-      res.json({ message: "Reset email sent" });
-   } catch (emailErr) {
-      console.error('SendGrid error:', emailErr);
-      // Return reset link in response since email failed
-      res.json({ 
-         message: "Email service unavailable",
-         resetLink: resetURL
-      });
-   }
-
- }
-
- catch (err) {
-
-  console.log(err);
-
-  res.status(500).json({
-
-   message: "Email failed"
-
-  });
-
- }
-
+  } catch (err) {
+    console.error('Forgot password error:', err);
+    res.status(500).json({ message: "Server error" });
+  }
 });
 
 
